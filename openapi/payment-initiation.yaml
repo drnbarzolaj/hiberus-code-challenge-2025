@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: Payment Initiation - PaymentOrder API
+  version: 1.0.1
+  description: |
+    REST API alineada a BIAN (SD: Payment Initiation, BQ: PaymentOrder).
+    Permite iniciar y consultar órdenes de pago.
+servers:
+  - url: http://localhost:8080
+paths:
+  /payment-initiation/payment-orders:
+    post:
+      operationId: initiatePaymentOrder
+      summary: Initiate a payment order
+      tags: [PaymentOrder]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema: { type: string, maxLength: 64 }
+          description: Idempotency key for safely retrying POST.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentOrderInitiationRequest' }
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URI of the created payment order
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentOrder' }
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '409':
+          description: Conflict (Idempotency or duplicate)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /payment-initiation/payment-orders/{id}:
+    get:
+      operationId: retrievePaymentOrder
+      summary: Retrieve a payment order by id
+      tags: [PaymentOrder]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentOrder' }
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /payment-initiation/payment-orders/{id}/status:
+    get:
+      operationId: retrievePaymentOrderStatus
+      summary: Retrieve payment order status
+      tags: [PaymentOrder]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentOrderStatus' }
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+components:
+  schemas:
+    CreditorAccount:
+      type: object
+      required: [name, accountId]
+      properties:
+        name:     { type: string, example: "Juan Pérez" }
+        accountId: { type: string, example: "001-654321-99" }
+        bankBic:  { type: string, nullable: true, example: "BKOLECEQ" }
+
+    InstructedAmount:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount:   { type: number, format: double, minimum: 0.01 }
+        currency: { type: string, example: "USD", minLength: 3, maxLength: 3 }
+
+    PaymentOrderInitiationRequest:
+      type: object
+      required: [debtorAccountId, creditorAccount, amount, currency]
+      properties:
+        debtorAccountId: { type: string, example: "001-123456-01" }
+        creditorAccount: { $ref: '#/components/schemas/CreditorAccount' }
+        amount:   { type: number, format: double, example: 150.75, minimum: 0.01 }
+        currency: { type: string, example: "USD", minLength: 3, maxLength: 3 }
+        reference: { type: string, nullable: true, maxLength: 140, example: "Factura-7890" }
+        requestedExecutionDate: { type: string, format: date, nullable: true }
+        remittanceInfo: { type: string, nullable: true, maxLength: 140 }
+        channel: { type: string, nullable: true, example: "ONLINE" }
+
+    PaymentOrder:
+      type: object
+      required: [id, status, createdAt, debtorAccountId, creditorAccount, instructedAmount]
+      properties:
+        id:       { type: string, format: uuid }
+        status:   { $ref: '#/components/schemas/PaymentOrderStatus' }
+        createdAt: { type: string, format: date-time }
+        debtorAccountId: { type: string }
+        creditorAccount: { $ref: '#/components/schemas/CreditorAccount' }
+        instructedAmount: { $ref: '#/components/schemas/InstructedAmount' }
+        reference: { type: string, nullable: true }
+        requestedExecutionDate: { type: string, format: date, nullable: true }
+        remittanceInfo: { type: string, nullable: true }
+
+    PaymentOrderStatus:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          enum: [INITIATED, PENDING, ACCEPTED, REJECTED, EXECUTED, FAILED]
+        reason: { type: string, nullable: true }
+        updatedAt: { type: string, format: date-time, nullable: true }
+
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:   { type: string, format: uri, example: "https://example.com/problems/validation" }
+        title:  { type: string }
+        status: { type: integer, format: int32, example: 400 }
+        detail: { type: string, nullable: true }
+        instance: { type: string, format: uri, nullable: true }
