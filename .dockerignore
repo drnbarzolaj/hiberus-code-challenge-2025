@@ -1,0 +1,15 @@
+# Maven/IDE
+target/
+.idea/
+*.iml
+*.log
+
+# Git & OS
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+
+# Node/Front (si existiera)
+node_modules/
+dist/
