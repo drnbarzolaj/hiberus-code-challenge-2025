@@ -80,6 +80,33 @@
           <version>2.5.0</version>
           <scope>compile</scope>
       </dependency>
+
+      <!-- AssertJ: aserciones fluidas -->
+      <dependency>
+          <groupId>org.assertj</groupId>
+          <artifactId>assertj-core</artifactId>
+          <scope>test</scope>
+      </dependency>
+
+      <!-- Mockito: mocks y extensión JUnit 5 -->
+      <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-junit-jupiter</artifactId>
+          <scope>test</scope>
+      </dependency>
+
+      <!-- reactor-test: StepVerifier y utilidades reactivas en tests -->
+      <dependency>
+          <groupId>io.projectreactor</groupId>
+          <artifactId>reactor-test</artifactId>
+          <scope>test</scope>
+      </dependency>
+
   </dependencies>
 
   <build>
