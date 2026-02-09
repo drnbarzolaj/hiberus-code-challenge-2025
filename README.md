@@ -66,3 +66,13 @@ src/main/java/com/hiberus/paymentinitiation
 
 ## Evidencia de IA
 Consulta la carpeta `/ai` con prompts, generaciones y decisiones humanas.
+
+## Entregables
+- **Repositorio**: este proyecto (branch `main`) y ramas de trabajo `docs-openapi`, `testing-compliance`, `dockerization`.
+- **Contrato REST (OpenAPI 3.0)**: `openapi/payment-initiation.yaml` (contract-first).
+- **Pruebas**:
+    - Unitarias con **JUnit 5 + AssertJ + Mockito**.
+    - Integración E2E con **WebTestClient** (WebFlux).
+    - Cobertura **JaCoCo ≥80%**; calidad con **Checkstyle** y **SpotBugs** en `mvn verify`.
+- **Docker**: `Dockerfile` (multi-stage) y `docker-compose.yml` mínimo.
+- **Evidencias de IA**: carpeta `/ai`.
